@@ -6,6 +6,7 @@ if os.path.islink(HEAP_INSPECT_PATH):
     HEAP_INSPECT_PATH = os.readlink(HEAP_INSPECT_PATH)
 sys.path.insert(0, os.path.dirname(HEAP_INSPECT_PATH))
 from heapinspect.core import *
+from termcolor import colored
 
 
 def to_int(val):
@@ -45,7 +46,17 @@ class HeapInspectCmd(object):
     @property
     def pid(self):
         return gdb.selected_inferior().pid
-
+    
+    def check_pid(func):
+        def check(self):
+            if self.pid == 0:
+                print(colored('[HeapInspect] Error:', 'red'), "You have to run the binary first.")
+                return
+            
+            func(self)
+        return check
+    
+    @check_pid
     def heap(self, *args):
         args = normalize_argv(args)
         hi = HeapInspector(self.pid)
@@ -64,13 +75,15 @@ class HeapInspectCmd(object):
             pp = PrettyPrinter(hi)
             print(pp.all)
 
+    @check_pid
     def heapchunks(self, *args):
         args = normalize_argv(args)
         hi = HeapInspector(self.pid)
         if 'rela' in args:
             hs.relative = True
         print(hs.heap_chunks)
-
+    
+    @check_pid
     def tcache(self, *args):
         args = normalize_argv(args)
         hi = HeapInspector(self.pid)
@@ -82,7 +95,8 @@ class HeapInspectCmd(object):
         else:
             pp = PrettyPrinter(hi)
             print(pp.tcache_chunks)
-
+    
+    @check_pid
     def fastbins(self, *args):
         args = normalize_argv(args)
         hi = HeapInspector(self.pid)
@@ -94,7 +108,8 @@ class HeapInspectCmd(object):
         else:
             pp = PrettyPrinter(hi)
             print(pp.fastbins)
-
+    
+    @check_pid
     def smallbins(self, *args):
         args = normalize_argv(args)
         hi = HeapInspector(self.pid)
@@ -106,7 +121,8 @@ class HeapInspectCmd(object):
         else:
             pp = PrettyPrinter(hi)
             print(pp.smallbins)
-
+    
+    @check_pid
     def largebins(self, *args):
         args = normalize_argv(args)
         hi = HeapInspector(self.pid)
@@ -118,7 +134,8 @@ class HeapInspectCmd(object):
         else:
             pp = PrettyPrinter(hi)
             print(pp.largebins)
-
+    
+    @check_pid
     def unsortedbins(self, *args):
         args = normalize_argv(args)
         hi = HeapInspector(self.pid)
@@ -212,5 +229,6 @@ class HiGdbCmd(gdb.Command):
 #        gdb.execute("%s %s" % (self.command,args))
 
 HiGdbCmd()
+print(colored('[HeapInspect]', 'red'), "Loaded.")
 #for cmd in hicmd.commands :
 #    HiGdbAlias(cmd,"hi %s" % cmd)
