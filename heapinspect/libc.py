@@ -66,12 +66,15 @@ def get_arena_info(libc_path, ld_path):
     # helper_path = build_helper(dir_path, size_t=size_t)
     # # use pre-compiled binary
     helper_path = "{dir}/libs/libc_info{arch}".format(dir=cur_dir, arch=arch)
+
     # libc name have to be libc.so.6
     shutil.copy(libc_path, os.path.join(dir_path, 'libc.so.6'))
     shutil.copy(ld_path, dir_path)
-    command = "{ld} --library-path {dir} {helper}".format(
-        ld=ld_path, dir=dir_path, helper=helper_path)
-    result = subprocess.check_output(command.split())
+
+    # Spaces in ld_path were causing problems.
+    command = [ld_path, "--library-path", dir_path, helper_path]
+    
+    result = subprocess.check_output(command)
     result = result.decode() #py3 problem
     shutil.rmtree(dir_path)
     dc = json.JSONDecoder()
