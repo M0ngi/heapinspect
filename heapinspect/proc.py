@@ -12,7 +12,7 @@ Note:
     The glibc basename should be like libc.so.6, libc-2.23.so, libc.so.
 '''
 
-LD_REGEX = '^[^\0]*ld(?:-[\d\.]+)?\.so(?:\.2)?$'
+LD_REGEX = "^[^\0]*ld(?:-.+)?\.so(?:\.2)?$" # '^[^\0]*ld(?:-[\d\.]+)?\.so(?:\.2)?$'
 
 
 class Map(object):
